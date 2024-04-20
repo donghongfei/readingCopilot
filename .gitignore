@@ -1,0 +1,21 @@
+.env
+venv/
+
+# macOS specific
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Development environments
+.idea/
+.vscode/
+*.swp
+*.bak
+*.tmp
