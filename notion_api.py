@@ -2,7 +2,7 @@ import logging
 
 from notion_client import Client
 
-from rss_parser import extract_content_with_images
+from rss_parser import html_to_markdown, markdown_to_notion_blocks
 
 
 def parse_date(date_str):
@@ -35,7 +35,7 @@ class NotionAPI:
                     "id": item["id"],
                     "Title": item["properties"]["Name"]["title"][0]["plain_text"],
                     "Link": item["properties"]["Url"]["url"],
-                    "FullTextEnabled": item["properties"]["FullTextEnabled"]["checkbox"],
+                    "AiSummaryEnabled": item["properties"]["AiSummaryEnabled"]["checkbox"],
                     "Tags": [tag["name"] for tag in item["properties"]["Tags"]["multi_select"]],
                     "Updated": item["properties"]["Updated"]["date"]["start"] if item["properties"]["Updated"]["date"] else None
                 }
@@ -65,11 +65,11 @@ class NotionAPI:
     def create_article_page(self, entry, database_id):
         """在Notion数据库中创建文章页面"""
         iso_date = parse_date(entry["date"])
-        page_id = None
-
         if not iso_date:
             logging.error("无效的日期格式，无法创建文章页面。")
             return
+
+        blocks = markdown_to_notion_blocks(entry['content'])
 
         properties = {
             "Title": {"title": [{"text": {"content": entry["title"]}}]},
@@ -80,29 +80,18 @@ class NotionAPI:
             "Tags": {"multi_select": [{"name": tag} for tag in entry["tags"]]}
         }
 
-        # print(entry)
-        blocks = extract_content_with_images(entry["content"])
-
-        # 打印出即将发送的请求数据，检查URL
-        # print("Creating Notion page with properties:", properties)
-        # print("Including blocks:", blocks)
-
         try:
             response = self.notion.pages.create(parent={"database_id": database_id}, properties=properties, children=blocks)
-            if response.get('object') == 'page':
-                logging.info(f"文章 '{entry['title']}' 已成功保存到Notion。")
-            else:
-                logging.error(f"文章 '{entry['title']}' 保存到Notion失败")
-            
             page_id = response.get('id')
             if page_id:
+                logging.info(f"文章 '{entry['title']}' 已成功保存到Notion。")
                 return page_id
             else:
                 logging.error("未能创建页面，未获得page_id")
         except Exception as e:
             logging.error(f"创建文章页面时出错: {e}")
-        
-        return page_id
+
+        return None
         
     def update_rss_status(self, rss_id, status):
         """更新RSS源状态"""
@@ -116,7 +105,7 @@ class NotionAPI:
                     }
                 }
             }
-            response = self.notion.pages.update(page_id=rss_id, **update_data)
+            self.notion.pages.update(page_id=rss_id, **update_data)
             logging.info(f"RSS源 {rss_id} 状态更新为 {status}.")
         except Exception as e:
             logging.error(f"更新RSS状态时出错: {e}")

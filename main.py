@@ -24,13 +24,18 @@ def main():
         return
 
     for rss_feed in rss_feeds:
+        # 是否启用Ai summary
+        ai_summary_enabled = rss_feed['AiSummaryEnabled']
         articles = parse_rss_feeds(rss_feed, manager)
         for article in articles:
             if not manager.is_page_exist(article['link'], NOTION_DB_READER):
                 page_id = manager.create_article_page(article, NOTION_DB_READER)
                 try:
-                    if article['content']:
-                        summary = generate_summary(article['content'], moonshot_client)
+                    # 使用BeautifulSoup解析HTML，获取纯文本内容
+                    content = article['content']
+                    # 如果启用Ai summary，生成摘要并更新摘要
+                    if content and ai_summary_enabled:
+                        summary = generate_summary(content, moonshot_client)
                         manager.update_article_summary(page_id, summary)
                 except Exception as e:
                     logging.error(f"Failed to generate or update summary for {article['title']}: {e}")

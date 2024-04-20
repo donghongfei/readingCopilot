@@ -1,10 +1,22 @@
 import logging
+import re
 import time
-from datetime import datetime
 
 import feedparser
+import html2text
+import nltk
 import requests
-from bs4 import BeautifulSoup
+from nltk.tokenize import sent_tokenize
+
+
+def download_nltk_data():
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        print("NLTK 'punkt' package not found, downloading...")
+        nltk.download('punkt')
+
+download_nltk_data()  # 在文件开头调用，确保punkt可用
 
 
 def parse_rss_feeds(rss, manager):
@@ -41,7 +53,8 @@ def process_entry(entry, rss):
     published = entry.get('published', entry.get('updated'))
 
     content = get_entry_content(entry)
-    if not content:
+    markdown_content = html_to_markdown(content)  # Convert HTML to Markdown
+    if not markdown_content.strip():
         logging.warning(f"未找到内容：{title}")
         return None
 
@@ -51,7 +64,7 @@ def process_entry(entry, rss):
         "title": title,
         "link": link,
         "date": published,
-        "content": content,
+        "content": markdown_content,
         "tags": tags,
         "rss_info": rss
     }
@@ -64,68 +77,89 @@ def get_entry_content(entry):
         return entry['summary']
     return entry.get('description')
 
-def extract_content_with_images(html_content, max_blocks=100):
-    """从HTML内容中提取文本和图片，准备添加到Notion，限制块的数量"""
-    soup = BeautifulSoup(html_content, 'html.parser')
-    notion_blocks = []
-    for element in soup.find_all(['p', 'img']):
-        if len(notion_blocks) >= max_blocks:
-            logging.info("已达到块的最大数量，停止添加更多块。")
-            break  # 如果块的数量达到100，停止添加
+def html_to_markdown(html_content):
+    """将HTML内容转换为Markdown"""
+    text_maker = html2text.HTML2Text()
+    text_maker.ignore_links = False
+    text_maker.bypass_tables = False
+    text_maker.body_width = 0  # 设置为0表示不自动换行
+    markdown = text_maker.handle(html_content)
+    return markdown
 
-        if element.name == 'p':
-            notion_blocks.extend(create_text_blocks(element.text, max_blocks-len(notion_blocks)))
-        elif element.name == 'img' and element.get('src'):
-            if check_url_valid(element['src']) and len(notion_blocks) < max_blocks:
-                validate_and_add_image_url(element['src'], notion_blocks)
 
-    return notion_blocks
-
-def create_text_blocks(text, remaining_blocks):
-    """根据剩余块数创建文本块，确保不超过限制"""
+def markdown_to_notion_blocks(markdown_content, max_blocks=100):
+    """将Markdown文本转换为Notion块，包括处理文本和图片链接。"""
     blocks = []
-    text = text.strip()
-    while len(text) > 2000 and remaining_blocks > 0:
-        part, text = text[:2000], text[2000:]
-        blocks.append(create_text_block(part))
-        remaining_blocks -= 1
-    if text and remaining_blocks > 0:
-        blocks.append(create_text_block(text))
+    paragraphs = markdown_content.split('\n')  # 按单个换行符拆分段落
+    block_count = 0
+
+    for paragraph in paragraphs:
+        if not paragraph.strip():  # 跳过空行
+            continue
+
+        # 检测是否是图片链接
+        image_links = re.findall(r'!\[.*?\]\((.*?)\)', paragraph)
+        for image_link in image_links:
+            if block_count < max_blocks:
+                blocks.append(create_notion_image_block(image_link))
+                block_count += 1
+            paragraph = re.sub(r'!\[.*?\]\(.*?\)', '', paragraph)  # 移除图片Markdown
+
+        # 添加文本块
+        if paragraph.strip() and len(paragraph) <= 2000 and block_count < max_blocks:
+            blocks.append(create_notion_text_block(paragraph))
+            block_count += 1
+        elif len(paragraph) > 2000:
+            # 如果段落超过2000字符，进一步按句子拆分
+            sentences = sent_tokenize(paragraph)
+            current_block = ""
+
+            for sentence in sentences:
+                if len(current_block) + len(sentence) + 1 > 2000:
+                    if block_count < max_blocks:
+                        blocks.append(create_notion_text_block(current_block))
+                        block_count += 1
+                        if block_count == max_blocks:
+                            return blocks  # 达到最大块数，提前结束
+                    current_block = sentence  # 开始新的块
+                else:
+                    if current_block:
+                        current_block += " "  # 添加空格以分隔句子
+                    current_block += sentence
+
+            if current_block and block_count < max_blocks:
+                blocks.append(create_notion_text_block(current_block))
+                block_count += 1
+                if block_count == max_blocks:
+                    break  # 达到最大块数，提前结束
+
     return blocks
 
-def create_text_block(text):
-    """创建单个文本块"""
+def create_notion_image_block(url):
+    """创建一个图片类型的Notion块"""
+    return {
+        "object": "block",
+        "type": "image",
+        "image": {
+            "type": "external",
+            "external": {
+                "url": url
+            }
+        }
+    }
+
+def create_notion_text_block(text):
+    """创建一个文本类型的Notion块"""
     return {
         "object": "block",
         "type": "paragraph",
         "paragraph": {
             "rich_text": [{
                 "type": "text",
-                "text": {"content": text},
+                "text": {"content": text.strip()}
             }]
         }
     }
-
-def validate_and_add_image_url(url, blocks):
-    """验证图片URL的有效性，并添加到Notion块列表"""
-    if check_url_valid(url):
-        logging.info(f"有效的图片URL: {url}")
-        blocks.append({
-            "object": "block",
-            "type": "image",
-            "image": {"type": "external", "external": {"url": url}}
-        })
-    else:
-        logging.error(f"无效的图片URL: {url}")
-
-def check_url_valid(url):
-    """检查URL是否有效"""
-    try:
-        response = requests.head(url, timeout=5)
-        return response.status_code == 200
-    except requests.RequestException as e:
-        logging.error(f"验证URL失败 {url}: {str(e)}")
-        return False
 
 def generate_summary(text, moonshot_client):
     try:
