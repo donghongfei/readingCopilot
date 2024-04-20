@@ -19,14 +19,14 @@ jobs:
       MOONSHOT_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
 
     steps:
-      - uses: actions/checkout@v4  # 更新到最新支持Node.js 20的版本
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4  # 更新到最新支持Node.js 20的版本
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache Python dependencies
-        uses: actions/cache@v4  # 更新到最新支持Node.js 20的版本
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
