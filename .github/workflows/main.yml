@@ -13,10 +13,11 @@ jobs:
         python-version: [3.8]
 
     env:
-      NOTION_SEC: ${{ secrets.NOTION_SEC }}
-      FEISHU_BOT_API: ${{ secrets.FEISHU_BOT_API }}
-      FEISHU_BOT_SEC: ${{ secrets.FEISHU_BOT_SEC }}
-
+      NOTION_KEY: ${{ secrets.NOTION_KEY }}
+      NOTION_DB_RSS: ${{ secrets.NOTION_DB_RSS }}
+      NOTION_DB_READER: ${{ secrets.NOTION_DB_READER }}
+      MOONSHOT_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
+      
     steps:
       - uses: actions/checkout@v2
 
