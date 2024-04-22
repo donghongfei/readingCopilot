@@ -3,7 +3,6 @@ import logging
 from markdown_it import MarkdownIt
 from mdit_py_plugins.footnote import footnote_plugin
 from mdit_py_plugins.front_matter import front_matter_plugin
-from notion_client import Client
 from openai import OpenAI
 
 from config import (MOONSHOT_API_KEY, NOTION_DB_READER, NOTION_DB_RSS,

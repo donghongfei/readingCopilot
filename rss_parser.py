@@ -5,7 +5,6 @@ from urllib.parse import quote, urlparse, urlunparse
 
 import feedparser
 import html2text
-import nltk
 import requests
 from nltk.tokenize import sent_tokenize
 
