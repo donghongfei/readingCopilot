@@ -5,3 +5,5 @@ notion_client>=2.2.1
 openai>=1.23.2
 python-dotenv>=1.0.1
 Requests>=2.31.0
+markdown-it-py
+mdit-py-plugins

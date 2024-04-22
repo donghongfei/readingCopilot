@@ -2,17 +2,9 @@ import logging
 
 from notion_client import Client
 
-from rss_parser import html_to_markdown, markdown_to_notion_blocks
+from rss_parser import convert_to_notion_blocks, markdown_to_notion_blocks
+from utils import log_error
 
-
-def parse_date(date_str):
-    """将RFC 2822格式的日期字符串转换为ISO 8601格式，以适应Notion API的要求"""
-    from email.utils import parsedate_to_datetime
-    try:
-        return parsedate_to_datetime(date_str).isoformat()
-    except Exception as e:
-        logging.error(f"日期格式转换错误: {e}")
-        return None
 
 class NotionAPI:
     def __init__(self, token):
@@ -45,7 +37,8 @@ class NotionAPI:
             logging.info(f"查询到{len(rss_feeds)}个启用的RSS源。")
             return rss_feeds
         except Exception as e:
-            logging.error(f"查询RSS源错误: {e}")
+            # logging.error(f"查询RSS源错误: {e}")
+            log_error("Query Open RSS", "查询RSS源错误", exception=str(e))
             return []
 
 
@@ -62,36 +55,41 @@ class NotionAPI:
         response = self.notion.databases.query(database_id=database_id, **query)
         return len(response.get("results", [])) > 0
 
-    def create_article_page(self, entry, database_id):
-        """在Notion数据库中创建文章页面"""
-        iso_date = parse_date(entry["date"])
-        if not iso_date:
-            logging.error("无效的日期格式，无法创建文章页面。")
-            return
-
-        blocks = markdown_to_notion_blocks(entry['content'])
+    def create_article_page(self, rss, entry, database_id, md):
+        """在Notion数据库中创建文章页面，并在必要时分批添加内容块"""
+        logging.info(f"开始创建文章页面：{entry['content']}")
+        tokens = md.parse(entry['content'], {})
+        blocks = convert_to_notion_blocks(tokens)
 
         properties = {
             "Title": {"title": [{"text": {"content": entry["title"]}}]},
             "Link": {"url": entry["link"]},
             "State": {"select": {"name": "Unread"}},
-            "Published": {"date": {"start": iso_date}},
+            "Published": {"date": {"start": entry["date"]}},
             "Source": {"relation": [{"id": entry["rss_info"]["id"]}]},
             "Tags": {"multi_select": [{"name": tag} for tag in entry["tags"]]}
         }
 
         try:
-            response = self.notion.pages.create(parent={"database_id": database_id}, properties=properties, children=blocks)
+            # 创建页面
+            response = self.notion.pages.create(parent={"database_id": database_id}, properties=properties, children=blocks[:100])
             page_id = response.get('id')
             if page_id:
-                logging.info(f"文章 '{entry['title']}' 已成功保存到Notion。")
+                logging.info(f"文章 '{entry['title']}' 的首批100个块已成功保存到Notion。")
+                # 如果还有更多块需要添加，继续添加剩余块
+                remaining_blocks = blocks[100:]
+                while remaining_blocks:
+                    self.notion.blocks.children.append(block_id=page_id, children=remaining_blocks[:100])
+                    remaining_blocks = remaining_blocks[100:]
+                    logging.info(f"成功添加了更多块到Notion页面。")
                 return page_id
             else:
-                logging.error("未能创建页面，未获得page_id")
+                logging.error(f"未能创建文章('{entry['title']}')页面，未获得page_id")
         except Exception as e:
-            logging.error(f"创建文章页面时出错: {e}")
+            log_error("Create Article Page", "创建文章页面时出错", rss_name=rss['Title'], article_title=entry['title'], exception=str(e))
 
         return None
+
         
     def update_rss_status(self, rss_id, status):
         """更新RSS源状态"""
