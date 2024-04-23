@@ -2,8 +2,8 @@ import logging
 
 from notion_client import Client
 
-from rss_parser import convert_to_notion_blocks, markdown_to_notion_blocks
-from utils import log_error
+from utils.rss_parser import convert_to_notion_blocks
+from utils.utils import log_error, parse_date
 
 
 class NotionAPI:
@@ -67,7 +67,7 @@ class NotionAPI:
             "State": {"select": {"name": "Unread"}},
             "Published": {"date": {"start": entry["date"]}},
             "Source": {"relation": [{"id": entry["rss_info"]["id"]}]},
-            "Tags": {"multi_select": [{"name": tag} for tag in entry["tags"]]}
+            "Tags": {"multi_select": [{"name": tag} for tag in rss["Tags"]]}
         }
 
         try:
@@ -106,7 +106,40 @@ class NotionAPI:
             self.notion.pages.update(page_id=rss_id, **update_data)
             logging.info(f"RSS源 {rss_id} 状态更新为 {status}.")
         except Exception as e:
-            logging.error(f"更新RSS状态时出错: {e}")
+            log_error("Update RSS Status", "更新RSS源状态时出错", rss_id=rss_id, status=status, exception=str(e))
+    
+    def update_rss_info(self, rss, status, feed_info):
+        """更新RSS源状态、更新时间和名称"""
+        updated = parse_date(feed_info["updated"])
+        title = feed_info["title"]
+        try:
+            update_data = {
+                "properties": {
+                    "Status": {
+                        "select": {
+                            "name": status
+                        }
+                    },
+                    "Updated": {
+                        "date": {
+                            "start": updated
+                        }
+                    },
+                    "Name": {
+                        "title": [
+                            {
+                                "text": {
+                                    "content": title
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+            self.notion.pages.update(page_id=rss['id'], **update_data)
+            logging.info(f"RSS源 {rss['id']} 状态更新为 {status}. 更新时间: {updated}, 名称: {title}")
+        except Exception as e:
+            log_error("Update RSS Info", "更新RSS源信息时出错", rss_name=title, exception=str(e))
 
     def update_article_summary(self, page_id, summary):
         update_data = {

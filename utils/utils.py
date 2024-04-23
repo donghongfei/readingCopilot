@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime
 
 from dateutil import parser
@@ -32,3 +33,17 @@ def parse_date(date_str):
     except ValueError as e:
         logging.error(f"日期格式转换错误，输入值 '{date_str}': {e}")
         return None
+    
+def safe_api_call(callable, *args, **kwargs):
+    max_retries = 3
+    retry_count = 0
+    while retry_count < max_retries:
+        try:
+            return callable(*args, **kwargs)
+        except Exception as e:  # 修改为适应实际的异常类型
+            retry_count += 1
+            wait_time = (2 ** retry_count)  # Exponential backoff
+            logging.info(f"达到请求上限，等待{wait_time}秒后重试")
+            time.sleep(wait_time)
+    logging.error("多次重试失败，放弃请求")
+    return None    
