@@ -57,7 +57,7 @@ class NotionAPI:
 
     def create_article_page(self, rss, entry, database_id, md):
         """在Notion数据库中创建文章页面，并在必要时分批添加内容块"""
-        logging.info(f"开始创建文章页面：{entry['content']}")
+        logging.info(f"开始创建文章页面：{entry['title']}")
         tokens = md.parse(entry['content'], {})
         blocks = convert_to_notion_blocks(tokens)
 

@@ -83,8 +83,8 @@ def html_to_markdown(html_content):
     return text_maker.handle(html_content)     
 
 
-def create_notion_text_block(text, bold=False):
-    """创建文本块，可选加粗"""
+def create_notion_text_block(text, bold=False, italic=False):
+    """创建文本块，可选加粗或斜体"""
     return {
         "object": "block",
         "type": "paragraph",
@@ -96,7 +96,8 @@ def create_notion_text_block(text, bold=False):
                     "link": None
                 },
                 "annotations": {
-                    "bold": bold
+                    "bold": bold,
+                    "italic": italic
                 }
             }]
         }
@@ -183,54 +184,72 @@ def convert_to_notion_blocks(tokens):
     return blocks
 
 def process_inline_tokens(tokens):
-    """处理内联元素的Token，返回Notion块列表"""
+    """处理内联元素的Token，生成对应的Notion块列表。
+    处理包括文本、加粗、链接、图片等元素，并根据它们的属性转换为Notion格式。
+    """
     notion_blocks = []
     current_text = ""
-    bold = False  # 用于跟踪当前文本是否应该加粗
+    bold = False
+    italic = False
+    url = ""
 
     for token in tokens:
-        logging.info(f"process_inline_tokens token.type: {token.type}, token：{token}")
+        logging.info(f"Processing token.type: {token.type}, Content: {token.content}")
 
         if token.type == 'text':
-            current_text += token.content  # 累积文本内容
+            # 累积文本内容
+            current_text += token.content
 
         elif token.type == 'strong_open':
-            # 遇到强调开始标签，如果之前有累积的文本，先处理它
+            # 如果之前有累积的文本，并且不是因为加粗标签打开而暂存的，先添加到块中
             if current_text:
-                notion_blocks.append(create_notion_text_block(current_text, bold))
+                notion_blocks.append(create_notion_text_block(current_text, bold, italic))
                 current_text = ""
-            bold = True  # 设置加粗标志
+            bold = True
 
         elif token.type == 'strong_close':
-            # 遇到强调结束标签，处理加粗文本
+            # 处理加粗文本，并重置加粗状态
             if current_text:
-                notion_blocks.append(create_notion_text_block(current_text, bold))
+                notion_blocks.append(create_notion_text_block(current_text, bold, italic))
                 current_text = ""
-            bold = False  # 重置加粗标志
+            bold = False
+
+        elif token.type == 'em_open':
+            # 斜体处理逻辑同加粗
+            if current_text:
+                notion_blocks.append(create_notion_text_block(current_text, bold, italic))
+                current_text = ""
+            italic = True
+
+        elif token.type == 'em_close':
+            if current_text:
+                notion_blocks.append(create_notion_text_block(current_text, bold, italic))
+                current_text = ""
+            italic = False
 
         elif token.type == 'link_open':
-            # 链接处理，假设链接的处理是独立的，不与当前文本累积
+            # 开启链接处理，存储URL
             url = token.attrs.get('href', '')
-            # 这里假设链接文本在link_open和link_close之间的text token
-            # 由于Markdown解析逻辑，我们暂时不处理文本
-            # 当实际需要时，可能要调整解析逻辑来累积链接文本
 
         elif token.type == 'link_close':
-            if current_text:  # 处理链接文本
+            # 处理链接文本，创建链接块
+            if current_text:
                 notion_blocks.append(create_notion_link_block(current_text, url))
-                current_text = ""
+                current_text = ""  # 链接文本处理完毕后重置文本缓冲
 
         elif token.type == 'image':
+            # 处理图片，创建图片块
+            if current_text:
+                # 如果图片前有文本，先处理文本
+                notion_blocks.append(create_notion_text_block(current_text, bold, italic))
+                current_text = ""
             img_url = token.attrs.get('src', '')
             alt_text = token.attrs.get('alt', '')
             notion_blocks.append(create_notion_image_block(img_url, alt_text))
-            # 图片后重置当前文本
-            current_text = ""
 
-    # 最后如果还有剩余文本，需要添加到blocks
+    # 处理任何剩余的文本
     if current_text:
-        notion_blocks.append(create_notion_text_block(current_text, bold))
+        notion_blocks.append(create_notion_text_block(current_text, bold, italic))
 
-    logging.info(f"process_inline_tokens notion_blocks：{notion_blocks}")
-
+    logging.info(f"Final notion blocks: {notion_blocks}")
     return notion_blocks

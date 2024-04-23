@@ -34,6 +34,7 @@ def main():
         # 是否启用Ai summary
         ai_summary_enabled = rss_feed['AiSummaryEnabled']
         articles = parse_rss_feeds(rss_feed, notion_client)
+        logging.warn(f"解析RSS源 {articles} 完成。")
         for article in articles:
             logging.info(f"正在处理条目 {article['title']}...")
             if not notion_client.is_page_exist(article['link'], NOTION_DB_READER):
