@@ -10,7 +10,7 @@ log_file_path = os.path.join(log_dir, "project_log.log")
 
 # 配置日志设置
 logging.basicConfig(
-    level=logging.WARN,
+    level=logging.WARNING,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
