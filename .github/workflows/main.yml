@@ -1,4 +1,4 @@
-name: Get RSS Hourly
+name: Get RSS Daily
 
 on:
   schedule:
