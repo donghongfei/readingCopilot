@@ -28,8 +28,8 @@ class NotionAPI:
                     "title": item["properties"]["Name"]["title"][0]["plain_text"],
                     "link": item["properties"]["Url"]["url"],
                     "AiSummaryEnabled": item["properties"]["AiSummaryEnabled"]["checkbox"],
-                    "tags": [tag["name"] for tag in item["properties"]["Tags"]["multi_select"]],
-                    "updated": item["properties"]["updated"]["date"]["start"] if item["properties"]["updated"]["date"] else None
+                    "Tags": [tag["name"] for tag in item["properties"]["Tags"]["multi_select"]],
+                    "updated": item["properties"]["Updated"]["date"]["start"] if item["properties"]["Updated"]["date"] else None
                 }
                 for item in response["results"]
             ]
