@@ -25,11 +25,11 @@ class NotionAPI:
             rss_feeds = [
                 {
                     "id": item["id"],
-                    "title": item["properties"]["Name"]["title"][0]["plain_text"],
-                    "link": item["properties"]["Url"]["url"],
+                    "Title": item["properties"]["Name"]["title"][0]["plain_text"],
+                    "Link": item["properties"]["Url"]["url"],
                     "AiSummaryEnabled": item["properties"]["AiSummaryEnabled"]["checkbox"],
                     "Tags": [tag["name"] for tag in item["properties"]["Tags"]["multi_select"]],
-                    "updated": item["properties"]["Updated"]["date"]["start"] if item["properties"]["Updated"]["date"] else None
+                    "Updated": item["properties"]["Updated"]["date"]["start"] if item["properties"]["Updated"]["date"] else None
                 }
                 for item in response["results"]
             ]
