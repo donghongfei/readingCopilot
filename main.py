@@ -46,6 +46,10 @@ def main():
                     if content and ai_summary_enabled:
                         summary = moonshot_client.generate_summary(content)
                         notion_client.update_article_summary(page_id, summary)
+                    # 如果没有启用Ai summary，根据正文截取前n个字
+                    elif content:
+                        summary = content[:800]  # 截断到800字符
+                        notion_client.update_article_summary(page_id, summary)
                 except Exception as e:
                     logging.error(f"Failed to generate or update summary for {article['title']}: {e}")
             else:

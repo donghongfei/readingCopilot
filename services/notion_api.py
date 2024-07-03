@@ -25,11 +25,11 @@ class NotionAPI:
             rss_feeds = [
                 {
                     "id": item["id"],
-                    "Title": item["properties"]["Name"]["title"][0]["plain_text"],
-                    "Link": item["properties"]["Url"]["url"],
+                    "title": item["properties"]["Name"]["title"][0]["plain_text"],
+                    "link": item["properties"]["Url"]["url"],
                     "AiSummaryEnabled": item["properties"]["AiSummaryEnabled"]["checkbox"],
-                    "Tags": [tag["name"] for tag in item["properties"]["Tags"]["multi_select"]],
-                    "Updated": item["properties"]["Updated"]["date"]["start"] if item["properties"]["Updated"]["date"] else None
+                    "tags": [tag["name"] for tag in item["properties"]["Tags"]["multi_select"]],
+                    "updated": item["properties"]["updated"]["date"]["start"] if item["properties"]["updated"]["date"] else None
                 }
                 for item in response["results"]
             ]
@@ -62,12 +62,12 @@ class NotionAPI:
         blocks = convert_to_notion_blocks(tokens)
 
         properties = {
-            "Title": {"title": [{"text": {"content": entry["title"]}}]},
-            "Link": {"url": entry["link"]},
-            "State": {"select": {"name": "Unread"}},
-            "Published": {"date": {"start": entry["date"]}},
-            "Source": {"relation": [{"id": entry["rss_info"]["id"]}]},
-            "Tags": {"multi_select": [{"name": tag} for tag in rss["Tags"]]}
+            "title": {"title": [{"text": {"content": entry["title"]}}]},
+            "link": {"url": entry["link"]},
+            "state": {"select": {"name": "Unread"}},
+            "date": {"date": {"start": entry["date"]}},
+            "source": {"relation": [{"id": entry["rss_info"]["id"]}]},
+            "tags": {"multi_select": [{"name": tag} for tag in rss["tags"]]}
         }
 
         try:
@@ -144,7 +144,7 @@ class NotionAPI:
     def update_article_summary(self, page_id, summary):
         update_data = {
             "properties": {
-                "AI summary": {
+                "summary": {
                     "rich_text": [{
                         "text": {
                             "content": summary
