@@ -1,8 +1,8 @@
-name: Get RSS Hourly
+name: Get RSS Daily
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 7 * * *"
   workflow_dispatch:
 
 jobs:
