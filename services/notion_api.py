@@ -18,18 +18,18 @@ class NotionAPI:
         """
         try:
             # 使用Notion API查询启用的RSS源，过滤条件为Disabled字段为False
-            query = {"filter": {"property": "Disabled", "checkbox": {"equals": False}}}
+            query = {"filter": {"property": "disabled", "checkbox": {"equals": False}}}
             response = self.notion.databases.query(database_id=database_id, **query)
             
             # 解析响应数据，提取RSS源信息
             rss_feeds = [
                 {
                     "id": item["id"],
-                    "Title": item["properties"]["Name"]["title"][0]["plain_text"],
-                    "Link": item["properties"]["Url"]["url"],
+                    "title": item["properties"]["name"]["title"][0]["plain_text"],
+                    "link": item["properties"]["url"]["url"],
                     "AiSummaryEnabled": item["properties"]["AiSummaryEnabled"]["checkbox"],
-                    "Tags": [tag["name"] for tag in item["properties"]["Tags"]["multi_select"]],
-                    "Updated": item["properties"]["Updated"]["date"]["start"] if item["properties"]["Updated"]["date"] else None
+                    "tags": [tag["name"] for tag in item["properties"]["tags"]["multi_select"]],
+                    "updated": item["properties"]["updated"]["date"]["start"] if item["properties"]["updated"]["date"] else None
                 }
                 for item in response["results"]
             ]
@@ -46,7 +46,7 @@ class NotionAPI:
         """检查指定链接的页面是否已存在于Notion数据库中"""
         query = {
             "filter": {
-                "property": "Link",
+                "property": "link",
                 "url": {
                     "equals": page_link
                 }
@@ -67,7 +67,9 @@ class NotionAPI:
             "state": {"select": {"name": "Unread"}},
             "date": {"date": {"start": entry["date"]}},
             "source": {"relation": [{"id": entry["rss_info"]["id"]}]},
-            "tags": {"multi_select": [{"name": tag} for tag in rss["tags"]]}
+            "tags": {"multi_select": [{"name": tag} for tag in rss["tags"]]},
+            "type": {"select": {"name": "Post"}},
+            "status": {"select": {"name": "Published"}}
         }
 
         try:
@@ -96,7 +98,7 @@ class NotionAPI:
         try:
             update_data = {
                 "properties": {
-                    "Status": {
+                    "status": {
                         "select": {
                             "name": status
                         }
@@ -115,17 +117,17 @@ class NotionAPI:
         try:
             update_data = {
                 "properties": {
-                    "Status": {
+                    "status": {
                         "select": {
                             "name": status
                         }
                     },
-                    "Updated": {
+                    "updated": {
                         "date": {
                             "start": updated
                         }
                     },
-                    "Name": {
+                    "name": {
                         "title": [
                             {
                                 "text": {

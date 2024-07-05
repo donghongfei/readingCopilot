@@ -22,11 +22,11 @@ def parse_rss_feeds(rss, manager):
     """解析RSS源，并返回文章列表"""
     articles = []
     try:
-        response = requests.get(rss['Link'], headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
+        response = requests.get(rss['link'], headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
         if response.status_code == 200:
             feed = feedparser.parse(response.text)
             if feed.bozo:
-                log_error("Parse RSS Feed", "解析RSS时发生错误", rss_name=rss['Title'], error=str(feed.bozo_exception))
+                log_error("Parse RSS Feed", "解析RSS时发生错误", rss_name=rss['title'], error=str(feed.bozo_exception))
                 manager.update_rss_status(rss["id"], "错误")
                 return articles
 
@@ -37,13 +37,13 @@ def parse_rss_feeds(rss, manager):
 
             manager.update_rss_info(rss, "活跃", feed.feed)
         else:
-            log_error("HTTP Request", "Received non-200 status code", rss_name=rss['Title'], status_code=response.status_code)
+            log_error("HTTP Request", "Received non-200 status code", rss_name=rss['title'], status_code=response.status_code)
             manager.update_rss_status(rss["id"], "错误")
     except requests.RequestException as e:
-        log_error("Network Error", "网络请求异常", rss_name=rss['Title'], exception=str(e))
+        log_error("Network Error", "网络请求异常", rss_name=rss['title'], exception=str(e))
         manager.update_rss_status(rss["id"], "错误")
     except Exception as e:
-        log_error("Parse RSS Feed", "解析RSS时发生未知错误", rss_name=rss['Title'], exception=str(e))
+        log_error("Parse RSS Feed", "解析RSS时发生未知错误", rss_name=rss['title'], exception=str(e))
         manager.update_rss_status(rss["id"], "错误")
     return articles
 
