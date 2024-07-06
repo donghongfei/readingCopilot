@@ -112,7 +112,7 @@ class NotionAPI:
     
     def update_rss_info(self, rss, status, feed_info):
         """更新RSS源状态、更新时间和名称"""
-        updated = parse_date(feed_info["updated"])
+        updated = parse_date(feed_info["updated"], "rss_name=%s" % rss["title"])
         title = feed_info["title"]
         try:
             update_data = {

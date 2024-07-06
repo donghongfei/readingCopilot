@@ -51,7 +51,7 @@ def process_entry(entry, rss):
     """处理单个RSS条目，提取所需信息"""
     title = entry.get('title')
     link = entry.get('link')
-    published = parse_date(entry.get('published', entry.get('updated')))
+    published = parse_date(entry.get('published', entry.get('updated')), "title=%s" % title)
     content = get_entry_content(entry)
     markdown_content = html_to_markdown(content)
     if not markdown_content.strip():

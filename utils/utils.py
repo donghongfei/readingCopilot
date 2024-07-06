@@ -10,10 +10,10 @@ def log_error(context, error_message, **kwargs):
     detailed_context = ', '.join([f"{key}='{value}'" for key, value in kwargs.items()])
     logging.error(f"{context} - {error_message}. Context: {detailed_context}")
     
-def parse_date(date_str):
+def parse_date(date_str, detailed_context=""):
     """尝试解析不同格式的日期字符串，转换为ISO 8601格式"""
     if date_str is None:
-        logging.warning("日期字段为空，将使用当前日期")
+        logging.warning(f"日期字段为空，将使用当前日期. Context: {detailed_context}")
         return datetime.now().isoformat()
 
     formats = [
