@@ -62,6 +62,7 @@ def process_entry(entry, rss):
         "link": link,
         "date": published,
         "content": markdown_content,
+        "html_content": content,
         "tags": tags,
         "rss_info": rss
     }

@@ -1,5 +1,6 @@
 import logging
 
+from bs4 import BeautifulSoup
 from markdown_it import MarkdownIt
 from mdit_py_plugins.footnote import footnote_plugin
 from mdit_py_plugins.front_matter import front_matter_plugin
@@ -40,15 +41,18 @@ def main():
             if not notion_client.is_page_exist(article['link'], NOTION_DB_READER):
                 page_id = notion_client.create_article_page(rss_feed, article, NOTION_DB_READER, md)
                 try:
-                    # 使用BeautifulSoup解析HTML，获取纯文本内容
-                    content = article['content']
-                    # 如果启用Ai summary，生成摘要并更新摘要
-                    if content and ai_summary_enabled:
-                        summary = moonshot_client.generate_summary(content)
-                        notion_client.update_article_summary(page_id, summary)
-                    # 如果没有启用Ai summary，根据正文截取前n个字
-                    elif content:
-                        summary = content[:800]  # 截断到800字符
+                    # content = article['content']
+                    html_content = article['html_content']
+                    if html_content:
+                        # 使用BeautifulSoup解析HTML，获取纯文本内容
+                        soup = BeautifulSoup(html_content, 'html.parser')
+                        plain_text_content = soup.get_text()
+                        # 如果启用Ai summary，生成摘要并更新摘要
+                        if plain_text_content and ai_summary_enabled:
+                            summary = moonshot_client.generate_summary(plain_text_content)
+                        # 如果没有启用Ai summary，根据正文截取前n个字
+                        else:
+                            summary = plain_text_content[:800]  # 截断到800字符
                         notion_client.update_article_summary(page_id, summary)
                 except Exception as e:
                     logging.error(f"Failed to generate or update summary for {article['title']}: {e}")
