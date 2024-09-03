@@ -1,5 +1,3 @@
-import logging
-
 from bs4 import BeautifulSoup
 from markdown_it import MarkdownIt
 from mdit_py_plugins.footnote import footnote_plugin
@@ -9,6 +7,7 @@ from services.moonshot_api import MoonshotAPI
 from services.notion_api import NotionAPI
 from utils.config import (MOONSHOT_API_KEY, NOTION_DB_READER, NOTION_DB_RSS,
                           NOTION_KEY)
+from utils.log import logging
 from utils.rss_parser import parse_rss_feeds
 
 
@@ -35,7 +34,7 @@ def main():
         # 是否启用Ai summary
         ai_summary_enabled = rss_feed['AiSummaryEnabled']
         articles = parse_rss_feeds(rss_feed, notion_client)
-        logging.info(f"解析RSS源 {articles} 完成。")
+        # logging.info(f"解析RSS源 {articles} 完成。")
         for article in articles:
             logging.info(f"正在处理条目 {article['title']}...")
             if not notion_client.is_page_exist(article['link'], NOTION_DB_READER):

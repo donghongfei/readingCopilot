@@ -8,4 +8,7 @@ python-dotenv==1.0.1
 python_dateutil==2.9.0.post0
 Requests==2.31.0
 markdown-it-py
-beautifulsoup4==4.12.3
+beautifulsoup4>=4.12.3
+
+https://wechat2rss.xlab.app/img-proxy/?k=de1e0f27&u=https%3A%2F%2Fmmbiz.qpic.cn%2Fsz_mmbiz_jpg%2F5ZkgBFK6pYKRdhpRdmxd7z9skkCnmibgPgdOL2omWiciaomd6tS98ticY3lpw7qDjZ7kP3f5mHDgAzFltxcudZnuicw%2F0%3Fwx_fmt%3Djpeg
+https://wechat2rss.xlab.app/img-proxy/?k=de1e0f27&amp;u=https%3A%2F%2Fmmbiz.qpic.cn%2Fsz_mmbiz_jpg%2F5ZkgBFK6pYKRdhpRdmxd7z9skkCnmibgPgdOL2omWiciaomd6tS98ticY3lpw7qDjZ7kP3f5mHDgAzFltxcudZnuicw%2F0%3Fwx_fmt%3Djpeg

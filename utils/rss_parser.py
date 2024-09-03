@@ -1,11 +1,13 @@
 import logging
-from urllib.parse import quote, urlparse, urlunparse
+import os
+import urllib.parse
 
 import feedparser
 import html2text
 import requests
 
-from utils.utils import log_error, parse_date
+from utils.log import logging
+from utils.utils import parse_date
 
 
 def download_nltk_data():
@@ -26,7 +28,7 @@ def parse_rss_feeds(rss, manager):
         if response.status_code == 200:
             feed = feedparser.parse(response.text)
             if feed.bozo:
-                log_error("Parse RSS Feed", "解析RSS时发生错误", rss_name=rss['title'], error=str(feed.bozo_exception))
+                logging.error(f"解析RSS时发生错误，rss_name: {rss['title']}, exception:{feed.bozo_exception}")
                 manager.update_rss_status(rss["id"], "错误")
                 return articles
 
@@ -37,13 +39,13 @@ def parse_rss_feeds(rss, manager):
 
             manager.update_rss_info(rss, "活跃", feed.feed)
         else:
-            log_error("HTTP Request", "Received non-200 status code", rss_name=rss['title'], status_code=response.status_code)
+            logging.error(f"HTTP Request， Received non-200 status code，rss_name: {rss['title']}, status_code = {response.status_code}")
             manager.update_rss_status(rss["id"], "错误")
     except requests.RequestException as e:
-        log_error("Network Error", "网络请求异常", rss_name=rss['title'], exception=str(e))
+        logging.error(f"Network Error，rss_name: {rss['title']}, exception = {e}")
         manager.update_rss_status(rss["id"], "错误")
     except Exception as e:
-        log_error("Parse RSS Feed", "解析RSS时发生未知错误", rss_name=rss['title'], exception=str(e))
+        logging.error(f"解析RSS时发生未知错误, rss_name: {rss['title']}, exception = {e}")
         manager.update_rss_status(rss["id"], "错误")
     return articles
 
@@ -136,16 +138,74 @@ def create_notion_heading_block(text, level):
             "color": "default"
         }
     }
+    
+# 允许的图片格式列表
+ALLOWED_IMAGE_TYPES = [
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.tif',
+    '.tiff',
+    '.bmp',
+    '.svg',
+    '.heic',
+    '.webp',
+]
 
-def create_notion_image_block(url, alt_text=None):
-    """创建一个嵌入图片的embed块"""
-    return {
-        "object": "block",
-        "type": "embed",
-        "embed": {
-            "url": url
+def is_allowed_image_type(url):
+    """检查图片URL的扩展名或通过Content-Type检查是否为图片"""
+    parsed_url = urllib.parse.urlparse(url)
+    file_type = os.path.splitext(parsed_url.path)[1].lower()
+
+    if file_type in ALLOWED_IMAGE_TYPES:
+        return True
+    
+    return False
+
+def create_notion_image_block(image_url, alt_text=None):
+    """创建一个嵌入图片的 Notion 块，并处理潜在的URL解码和错误情况"""
+    try:
+        logging.debug(f'插入图片, 原始 image_url: {image_url}')
+        
+        # 校验图片格式或通过Content-Type检查
+        if not is_allowed_image_type(image_url):
+            raise ValueError(f"不支持的图片格式: {image_url}")
+        
+        # 创建 Notion 图片块
+        image_block = {
+            "object": "block",
+            "type": "image",
+            "image": {
+                "type": "external",
+                "external": {
+                    "url": image_url
+                }
+            }
         }
-    }
+        
+        # 如果提供了 alt_text，添加到块中
+        if alt_text:
+            image_block['image']['caption'] = [
+                {
+                    "type": "text",
+                    "text": {
+                        "content": alt_text
+                    }
+                }
+            ]
+        
+        return image_block
+    
+    except Exception as e:
+        logging.error(f"创建图片块时出错: {e}")
+        # 降级成embed，凑合着能用
+        return {
+            "type": "embed",
+            "embed": {
+                "url": image_url
+            }
+        }
 
 
 
@@ -181,7 +241,7 @@ def convert_to_notion_blocks(tokens):
             blocks.extend(process_inline_tokens(token.children))
         elif token.type == 'paragraph_close':
             continue  # 跳过关闭段落的标记
-    logging.info(f"convert_to_notion_blocks: {blocks}")
+    # logging.info(f"convert_to_notion_blocks: {blocks}")
     return blocks
 
 def process_inline_tokens(tokens):
@@ -195,7 +255,7 @@ def process_inline_tokens(tokens):
     url = ""
 
     for token in tokens:
-        logging.info(f"Processing token.type: {token.type}, Content: {token.content}")
+        # logging.info(f"Processing token.type: {token.type}, Content: {token.content}")
 
         if token.type == 'text':
             # 累积文本内容
@@ -252,5 +312,5 @@ def process_inline_tokens(tokens):
     if current_text:
         notion_blocks.append(create_notion_text_block(current_text, bold, italic))
 
-    logging.info(f"Final notion blocks: {notion_blocks}")
+    # logging.info(f"Final notion blocks: {notion_blocks}")
     return notion_blocks

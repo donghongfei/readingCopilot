@@ -1,22 +1,8 @@
-import logging
 import os
 
 from dotenv import load_dotenv
 
-# 创建日志目录
-log_dir = "logs"
-os.makedirs(log_dir, exist_ok=True)
-log_file_path = os.path.join(log_dir, "project_log.log")
-
-# 配置日志设置
-logging.basicConfig(
-    level=logging.WARNING,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(log_file_path, mode='a')
-    ]
-)
+from utils.log import logging
 
 # 加载环境变量
 try:

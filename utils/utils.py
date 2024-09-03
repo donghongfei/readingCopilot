@@ -1,15 +1,11 @@
-import logging
 import time
 from datetime import datetime
 
 from dateutil import parser
 
+from utils.log import logging
 
-def log_error(context, error_message, **kwargs):
-    """Log an error with detailed context and additional keyword arguments."""
-    detailed_context = ', '.join([f"{key}='{value}'" for key, value in kwargs.items()])
-    logging.error(f"{context} - {error_message}. Context: {detailed_context}")
-    
+
 def parse_date(date_str, detailed_context=""):
     """尝试解析不同格式的日期字符串，转换为ISO 8601格式"""
     if date_str is None:

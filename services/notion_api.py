@@ -1,9 +1,8 @@
-import logging
-
 from notion_client import Client
 
+from utils.log import logging
 from utils.rss_parser import convert_to_notion_blocks
-from utils.utils import log_error, parse_date
+from utils.utils import parse_date
 
 
 class NotionAPI:
@@ -37,8 +36,7 @@ class NotionAPI:
             logging.info(f"查询到{len(rss_feeds)}个启用的RSS源。")
             return rss_feeds
         except Exception as e:
-            # logging.error(f"查询RSS源错误: {e}")
-            log_error("Query Open RSS", "查询RSS源错误", exception=str(e))
+            logging.error(f"查询RSS源错误 - exception:{e}")
             return []
 
 
@@ -88,8 +86,7 @@ class NotionAPI:
             else:
                 logging.error(f"未能创建文章('{entry['title']}')页面，未获得page_id")
         except Exception as e:
-            log_error("Create Article Page", "创建文章页面时出错", rss_name=rss['Title'], article_title=entry['title'], exception=str(e))
-
+            logging.error(f"创建文章页面时出错，rss_name: {rss['title']}, article_title: {entry['title']}, exception:{e}")
         return None
 
         
@@ -108,7 +105,7 @@ class NotionAPI:
             self.notion.pages.update(page_id=rss_id, **update_data)
             logging.info(f"RSS源 {rss_id} 状态更新为 {status}.")
         except Exception as e:
-            log_error("Update RSS Status", "更新RSS源状态时出错", rss_id=rss_id, status=status, exception=str(e))
+            logging.error(f"更新RSS源状态出错，rss_id: {rss_id}, status: {status}, exception:{e}")
     
     def update_rss_info(self, rss, status, feed_info):
         """更新RSS源状态、更新时间和名称"""
@@ -141,7 +138,7 @@ class NotionAPI:
             self.notion.pages.update(page_id=rss['id'], **update_data)
             logging.info(f"RSS源 {rss['id']} 状态更新为 {status}. 更新时间: {updated}, 名称: {title}")
         except Exception as e:
-            log_error("Update RSS Info", "更新RSS源信息时出错", rss_name=title, exception=str(e))
+            logging.error(f"更新RSS源信息时出错，rss_name: {title}, exception:{e}")
 
     def update_article_summary(self, page_id, summary):
         update_data = {

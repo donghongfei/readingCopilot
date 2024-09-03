@@ -1,8 +1,7 @@
-import logging
-
 from openai import OpenAI
 
-from utils.utils import log_error, safe_api_call
+from utils.log import logging
+from utils.utils import safe_api_call
 
 
 class MoonshotAPI:
@@ -50,5 +49,5 @@ class MoonshotAPI:
             )
             return response.choices[0].message.content
         except Exception as e:
-            log_error("Generate Summary", "生成摘要时发生错误",  exception=str(e))
+            logging.error(f"生成摘要时发生错误, exception: {e}")
             return "无法生成总结。"
