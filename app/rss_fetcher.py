@@ -43,25 +43,21 @@ def fetch_rss_content(rss_info: RSSItem):
         response.raise_for_status()  # 如果状态码不是200，抛出HTTPError
 
         feed = feedparser.parse(response.text)
-        logger.debug(f"response.text:{response.text}")
-        logger.debug(f"feed:{feed}")
 
         if feed.bozo:  # 检查是否有解析错误
             raise Exception(f"RSS解析错误: {feed.bozo_exception}")
 
         # 记录RSS中的更新时间，优先使用`updated`，如果没有则使用`published`
         feed_updated = feed.feed.get("updated", None)
-        logger.debug(f"feed_updated:{feed_updated}")
         if not feed_updated:
             feed_updated = feed.feed.get("published", None)
-            logger.debug(f"published:{feed_updated}")
 
         # 转换 feed_updated 为 ISO 格式
         parsed_feed_updated = parse_date(feed_updated)
 
-        logger.debug(
-            f"parsed_feed_updated:{parsed_feed_updated},  rss_updated:{parse_date(rss_updated)}, feed_updated:{feed_updated}"
-        )
+        # logger.debug(
+        #     f"parsed_feed_updated:{parsed_feed_updated},  rss_updated:{parse_date(rss_updated)}, feed_updated:{feed_updated}"
+        # )
 
         # 构建文章列表
         articles = []

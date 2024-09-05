@@ -7,9 +7,9 @@ from app.rss_fetcher import fetch_rss_content
 
 def main():
     # 打印所有环境变量
-    logger.debug("Printing all environment variables:")
-    for key, value in os.environ.items():
-        logger.debug(f"{key}: {value}")
+    # logger.debug("Printing all environment variables:")
+    # for key, value in os.environ.items():
+    #     logger.debug(f"{key}: {value}")
 
     # 读取RSS数据库，获取启用的RSS Feed
     active_rss_feeds = get_active_rss_feeds()
@@ -24,7 +24,7 @@ def main():
 
         # 遍历每篇文章，保存至Notion
         for article in articles:
-            logger.debug(f"Fetched article: {article}")
+            # logger.debug(f"Fetched article: {article}")
 
             save_article_to_notion(article)
 
