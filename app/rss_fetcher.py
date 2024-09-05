@@ -3,11 +3,11 @@ from datetime import datetime
 import feedparser
 import requests
 
-from app.model.article import Article
 from app.log import logger
+from app.model.article import Article
+from app.model.rss_item import RSSItem
 from app.notion_manager import check_articles_existence_in_notion  # 假设有这个方法
 from app.notion_manager import update_rss_status
-from app.model.rss_item import RSSItem
 from app.utils import parse_date
 
 
@@ -49,8 +49,10 @@ def fetch_rss_content(rss_info: RSSItem):
 
         # 记录RSS中的更新时间，优先使用`updated`，如果没有则使用`published`
         feed_updated = feed.feed.get("updated", None)
+        logger.debug(f"feed_updated:{feed_updated}")
         if not feed_updated:
             feed_updated = feed.feed.get("published", None)
+            logger.debug(f"published:{feed_updated}")
 
         # 转换 feed_updated 为 ISO 格式
         parsed_feed_updated = parse_date(feed_updated)
