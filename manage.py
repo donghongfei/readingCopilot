@@ -17,7 +17,7 @@ def main():
 
     # 遍历每个RSS Feed的链接，抓取文章
     for rss_feed in active_rss_feeds:
-        logger.debug(f"开始处理: {rss_feed.title}")
+        logger.info(f"开始处理: {rss_feed.title}")
 
         articles = fetch_rss_content(rss_feed)
         # logger.debug(f"Fetched articles from {rss_feed.title}: {articles}")
