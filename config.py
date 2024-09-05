@@ -21,7 +21,7 @@ class Config:
 
     APP_ENV = os.getenv("APP_ENV", "development")
 
-    LOG_LEVEL = logging.DEBUG if APP_ENV == "development" else logging.WARNING
+    LOG_LEVEL = logging.WARNING
 
     # 安全检查：确保关键的环境变量都已设置
     required_vars = {
