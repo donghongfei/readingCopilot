@@ -3,11 +3,11 @@ from datetime import datetime
 import feedparser
 import requests
 
-from app.article import Article
+from app.model.article import Article
 from app.log import logger
 from app.notion_manager import check_articles_existence_in_notion  # 假设有这个方法
 from app.notion_manager import update_rss_status
-from app.rss_item import RSSItem
+from app.model.rss_item import RSSItem
 from app.utils import parse_date
 
 

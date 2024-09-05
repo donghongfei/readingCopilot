@@ -16,6 +16,10 @@ def parse_date(date_str, detailed_context="", strip_seconds=True):
         # 使用 dateutil.parser 来解析日期字符串
         parsed_date = parser.parse(date_str)
 
+        # 如果 parsed_date 没有时区信息，假设为 UTC 时间
+        if parsed_date.tzinfo is None:
+            parsed_date = pytz.utc.localize(parsed_date)
+
         # 去除秒数（如果指定）
         if strip_seconds:
             parsed_date = parsed_date.replace(second=0, microsecond=0)
