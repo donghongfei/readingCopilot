@@ -1,10 +1,18 @@
 import time
 from datetime import datetime
 
+import requests
 from dateutil import parser
+from markdown_it import MarkdownIt
+from mdit_py_plugins.footnote import footnote_plugin
+from mdit_py_plugins.front_matter import front_matter_plugin
 
 from utils.log import logging
 
+
+def get_markdown_parser():
+    """获取带有插件的Markdown解析器"""
+    return MarkdownIt().use(front_matter_plugin).use(footnote_plugin)
 
 def parse_date(date_str, detailed_context=""):
     """尝试解析不同格式的日期字符串，转换为ISO 8601格式"""
@@ -36,10 +44,13 @@ def safe_api_call(callable, *args, **kwargs):
     while retry_count < max_retries:
         try:
             return callable(*args, **kwargs)
-        except Exception as e:  # 修改为适应实际的异常类型
+        except requests.exceptions.RequestException as e:
             retry_count += 1
             wait_time = (2 ** retry_count)  # Exponential backoff
             logging.info(f"达到请求上限，等待{wait_time}秒后重试")
             time.sleep(wait_time)
+        except Exception as e:
+            logging.error(f"API 调用失败: {e}")
+            return None
     logging.error("多次重试失败，放弃请求")
-    return None    
+    return None

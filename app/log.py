@@ -1,20 +1,23 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 ##
- # Copyright (C) 2018 All rights reserved.
- #   
- # @File log.py
- # @Author hongfei
- # @Version 1.0
- # @Date 2024-08-07
- #
- #
-
+# Copyright (C) 2018 All rights reserved.
+#
+# @File log.py
+# @Author hongfei
+# @Version 1.0
+# @Date 2024-08-07
+#
+#
 import logging
+import os
 import sys
 
+from config import config
 
-def _reset_logging(log):
+
+# 重置日志句柄
+def _reset_logger(log):
     for handler in log.handlers:
         handler.close()
         log.removeHandler(handler)
@@ -39,12 +42,13 @@ def _reset_logging(log):
     log.addHandler(console_handle)
 
 
-def _get_logging():
+def _get_logger():
     log = logging.getLogger("log")
-    _reset_logging(log)
-    log.setLevel(logging.DEBUG)
+    _reset_logger(log)
+    # 根据当前环境配置日志级别
+    log.setLevel(config.LOG_LEVEL)
     return log
 
 
 # 日志句柄
-logging = _get_logging()
+logger = _get_logger()

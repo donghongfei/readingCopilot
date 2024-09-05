@@ -17,10 +17,17 @@ NOTION_DB_RSS = os.getenv("NOTION_DB_RSS")
 NOTION_DB_READER = os.getenv("NOTION_DB_READER")
 MOONSHOT_API_KEY = os.getenv("MOONSHOT_API_KEY")
 
-# 安全检查
-env_vars = ["NOTION_KEY", "NOTION_DB_RSS", "NOTION_DB_READER", "MOONSHOT_API_KEY"]
-missing_vars = [var for var in env_vars if not os.getenv(var)]
+# 安全检查：确保关键的环境变量都已设置
+required_vars = {
+    "NOTION_KEY": NOTION_KEY,
+    "NOTION_DB_RSS": NOTION_DB_RSS,
+    "NOTION_DB_READER": NOTION_DB_READER,
+    "MOONSHOT_API_KEY": MOONSHOT_API_KEY
+}
+
+missing_vars = [key for key, value in required_vars.items() if not value]
 
 if missing_vars:
-    logging.error("Missing critical environment variables: {}".format(', '.join(missing_vars)))
-    raise EnvironmentError("Missing environment variables: {}".format(', '.join(missing_vars)))
+    logging.error(f"Missing critical environment variables: {', '.join(missing_vars)}")
+    raise EnvironmentError(f"Missing environment variables: {', '.join(missing_vars)}")
+

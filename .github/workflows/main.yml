@@ -40,4 +40,4 @@ jobs:
 
       - name: Load RSS feeds
         run: |
-          python main.py
+          python manage.py

@@ -43,7 +43,7 @@ Notion Feed Manager 是一个用于将RSS源自动化导入到Notion数据库的
 在项目根目录下运行：
 
 ```
-python src/main.py
+python src/manage.py
 ```
 
 ## 使用方法

@@ -23,6 +23,7 @@ download_nltk_data()  # 确保启动时punkt数据包已经下载
 def parse_rss_feeds(rss, manager):
     """解析RSS源，并返回文章列表"""
     articles = []
+    ai_summary_enabled = rss['AiSummaryEnabled']
     try:
         response = requests.get(rss['link'], headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
         if response.status_code == 200:
@@ -65,6 +66,7 @@ def process_entry(entry, rss):
         "date": published,
         "content": markdown_content,
         "html_content": content,
+        "markdown_content":markdown_content, #这里冗余一个字段，怕改的地方太多
         "tags": tags,
         "rss_info": rss
     }

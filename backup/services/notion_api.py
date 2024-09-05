@@ -1,3 +1,6 @@
+import logging as std_logging
+import os
+
 from notion_client import Client
 
 from utils.log import logging
@@ -7,7 +10,13 @@ from utils.utils import parse_date
 
 class NotionAPI:
     def __init__(self, token):
-        self.notion = Client(auth=token)
+        ENV = os.getenv('APP_ENV', 'development')
+        if ENV == 'production':
+            log_level = std_logging.WARNING
+        else:
+            log_level = std_logging.ERROR
+            
+        self.notion = Client(auth=token,log_level=log_level)
         logging.info("Notion API客户端已初始化。")
 
     def query_open_rss(self, database_id):
