@@ -43,6 +43,8 @@ def fetch_rss_content(rss_info: RSSItem):
         response.raise_for_status()  # 如果状态码不是200，抛出HTTPError
 
         feed = feedparser.parse(response.text)
+        logger.debug(f"response.text:{response.text}")
+        logger.debug(f"feed:{feed}")
 
         if feed.bozo:  # 检查是否有解析错误
             raise Exception(f"RSS解析错误: {feed.bozo_exception}")
