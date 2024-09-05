@@ -3,7 +3,7 @@ name: Get RSS Daily
 on:
   schedule:
     # 7点-22点之间每小时运行一次
-    - cron: "0 7-21 * * *"
+    - cron: "0 7-23 * * *"
   workflow_dispatch:
 
 jobs:
