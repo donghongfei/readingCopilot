@@ -17,6 +17,7 @@ jobs:
       NOTION_DB_RSS: ${{ secrets.NOTION_DB_RSS }}
       NOTION_DB_READER: ${{ secrets.NOTION_DB_READER }}
       MOONSHOT_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
+      APP_ENV: ${{ secrets.APP_ENV }}
 
     steps:
       - uses: actions/checkout@v4
