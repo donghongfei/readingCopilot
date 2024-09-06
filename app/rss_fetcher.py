@@ -105,7 +105,7 @@ def fetch_rss_content(rss_info: RSSItem):
         update_rss_status(
             rss_id=rss_id,
             status="错误",
-            updated_time=parse_date(datetime.now().isoformat()),  # 当前时间作为更新时间
+            updated_time=parse_date(None),  # 当前时间作为更新时间
             remarks=f"网络错误: {str(e)}",
         )
         return []
@@ -116,7 +116,7 @@ def fetch_rss_content(rss_info: RSSItem):
         update_rss_status(
             rss_id=rss_id,
             status="错误",
-            updated_time=parse_date(datetime.now().isoformat()),  # 当前时间作为更新时间
+            updated_time=parse_date(None),  # 当前时间作为更新时间
             remarks=f"解析错误: {str(e)}",
         )
         return []

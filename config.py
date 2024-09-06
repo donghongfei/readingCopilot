@@ -19,6 +19,12 @@ class Config:
     NOTION_DB_READER = os.getenv("NOTION_DB_READER")
     MOONSHOT_API_KEY = os.getenv("MOONSHOT_API_KEY")
 
+    WEBHOOK_URL_FEISHU = os.getenv("WEBHOOK_URL_FEISHU")
+    # 如果开启了签名校验，填写秘钥
+    SECRET_KEY_FEISHU = os.getenv("SECRET_KEY_FEISHU")
+
+    WEBHOOK_URL_WECHAT = os.getenv("WEBHOOK_URL_WECHAT")
+
     APP_ENV = os.getenv("APP_ENV", "development")
 
     LOG_LEVEL = logging.DEBUG

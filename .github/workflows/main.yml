@@ -18,6 +18,7 @@ jobs:
       NOTION_DB_READER: ${{ secrets.NOTION_DB_READER }}
       MOONSHOT_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
       APP_ENV: ${{ secrets.APP_ENV }}
+      WEBHOOK_URL_WECHAT: ${{ secrets.WEBHOOK_URL_WECHAT }}
 
     steps:
       - uses: actions/checkout@v4

@@ -10,4 +10,3 @@ Requests==2.31.0
 # markdown-it-py
 # beautifulsoup4>=4.12.3
 pytz
-requests_toolbelt
