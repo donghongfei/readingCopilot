@@ -3,8 +3,8 @@ from typing import List
 import requests
 from notion_client import Client
 
-from app.model.article import Article
 from app.log import logger, logging
+from app.model.article import Article
 from app.model.rss_item import RSSItem
 from config import config
 
@@ -36,6 +36,10 @@ def get_active_rss_feeds() -> List[RSSItem]:
     response = notion.databases.query(
         database_id=config.NOTION_DB_RSS,
         filter={"property": "disabled", "checkbox": {"equals": False}},
+        sorts=[
+            {"property": "status", "direction": "ascending"},
+            {"property": "updated", "direction": "descending"},
+        ],
     )
 
     # 解析Notion返回的RSS feed数据
