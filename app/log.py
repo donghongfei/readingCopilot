@@ -10,7 +10,6 @@
 #
 #
 import logging
-import os
 import sys
 
 from config import config
