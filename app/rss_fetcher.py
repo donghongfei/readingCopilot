@@ -85,9 +85,7 @@ def fetch_rss_content(rss_info: RSSItem):
             article = Article(
                 title=entry.title,
                 link=entry.link,
-                date=parse_date(
-                    entry.get("published", None)
-                ),  # 使用 published 作为文章的日期
+                date=parse_date(entry.get("published")),
                 source_id=rss_id,
                 tags=rss_tags,
                 content=get_entry_content(entry),
