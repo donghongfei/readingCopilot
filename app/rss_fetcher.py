@@ -22,6 +22,7 @@ def get_entry_content(entry):
 
 def fetch_rss_content(rss_info: RSSItem):
     rss_id = rss_info.id
+    rss_title = rss_info.title
     rss_url = rss_info.link
     rss_tags = rss_info.tags
     rss_updated = rss_info.updated
@@ -63,7 +64,11 @@ def fetch_rss_content(rss_info: RSSItem):
         articles = []
 
         # 比较 feed_updated 和数据库中的 rss_updated，如果相同，跳过文章处理
-        if parsed_feed_updated and parsed_feed_updated == parse_date(rss_updated):
+        if (
+            parsed_feed_updated
+            and rss_updated
+            and parsed_feed_updated == parse_date(rss_updated)
+        ):
             logger.debug(f"RSS源 {rss_url} 没有新文章，跳过处理。")
             return articles
 
@@ -91,6 +96,7 @@ def fetch_rss_content(rss_info: RSSItem):
             articles.append(article)
 
         # 正常时，更新RSS数据库状态为活跃
+        logger.info(f"抓取正常，更新rss状态: {rss_title}")
         update_rss_status(
             rss_id=rss_id,
             status="活跃",

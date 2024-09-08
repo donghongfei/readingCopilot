@@ -26,9 +26,12 @@ def main():
 
         articles = fetch_rss_content(rss_feed)
 
+        logger.info(f"文章抓取完成，源: {rss_feed.title}")
+
         # 遍历每篇文章，保存至Notion，并准备发送消息
         for article in articles:
-            logger.info(f"Fetched article: {article.title}")
+            logger.info(f"开始保存文章: {article.title}")
+            logger.debug(f"article: {article.to_notion_properties()}")
 
             # 保存文章至Notion
             save_article_to_notion(article)

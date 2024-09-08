@@ -8,7 +8,7 @@ from app.model.article import Article
 from app.model.rss_item import RSSItem
 from config import config
 
-notion = Client(auth=config.NOTION_KEY, log_level=logging.WARNING)
+notion = Client(auth=config.NOTION_KEY, log_level=config.LOG_LEVEL)
 
 
 # 解析Notion返回的RSS项数据
