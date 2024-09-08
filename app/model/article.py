@@ -8,7 +8,6 @@ class Article:
     link: str
     content: str  # 新增用于保存文章的完整内容
     summary: Optional[str] = None  # 用于保存截取后的摘要
-    state: str = "Unread"
     date: Optional[str] = None
     source_id: Optional[str] = None
     tags: List[str] = None
@@ -29,7 +28,6 @@ class Article:
         return {
             "title": {"title": [{"text": {"content": self.title}}]},
             "link": {"url": self.link},
-            "state": {"select": {"name": self.state}},
             "date": {"date": {"start": self.date}} if self.date else None,
             "source": (
                 {"relation": [{"id": self.source_id}]} if self.source_id else None
