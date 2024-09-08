@@ -37,7 +37,7 @@ def main():
             save_article_to_notion(article)
 
             # 准备消息内容
-            message = f"{article.title}\n{article.link}"
+            message = f"{article.title}\n({rss_feed.title})\n{article.link}"
             messages.append(message)
 
     # 如果有新的文章更新，发送消息到企业微信群
