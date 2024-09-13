@@ -37,7 +37,7 @@ def fetch_rss_content(rss_info: RSSItem):
     try:
         # 抓取RSS源内容
         response = requests.get(
-            rss_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=90
+            rss_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=120
         )
         response.raise_for_status()  # 如果状态码不是200，抛出HTTPError
 
