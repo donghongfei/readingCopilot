@@ -28,6 +28,9 @@ def main():
 
         logger.info(f"文章抓取完成，源: {rss_feed.title}")
 
+        # 为当前RSS feed准备消息
+        rss_messages = [f"@{rss_feed.title}"]
+
         # 遍历每篇文章，保存至Notion，并准备发送消息
         for article in articles:
             logger.info(f"开始保存文章: {article.title}")
@@ -37,16 +40,16 @@ def main():
             save_article_to_notion(article)
 
             # 准备消息内容
-            message = f"{article.title}\n({rss_feed.title})\n{article.link}"
-            messages.append(message)
+            article_message = f"{article.title}\n{article.link}"
+            rss_messages.append(article_message)
 
-    # 如果有新的文章更新，发送消息到企业微信群
-    if messages:
-        final_message = "\n\n".join(messages)  # 将所有消息拼接成一个消息
-        logger.info("发送消息到企业微信群机器人")
-        send_message_to_wechat(final_message)
-    else:
-        logger.info("没有新的文章更新")
+        # 如果有新的文章更新，发送消息到企业微信群
+        if len(rss_messages) > 1:  # 确保有文章更新
+            final_message = "\n".join(rss_messages)
+            logger.info(f"发送消息到企业微信群机器人: {rss_feed.title}")
+            send_message_to_wechat(final_message)
+        else:
+            logger.info(f"没有新的文章更新: {rss_feed.title}")
 
 
 if __name__ == "__main__":
