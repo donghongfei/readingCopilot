@@ -18,8 +18,8 @@ class Article:
         """在初始化后自动生成 summary 字段（截取内容的前200字符）"""
         if not self.summary:
             self.summary = (
-                (self.content[:1996] + "...")
-                if len(self.content) > 1996
+                (self.content[:1990] + "...")
+                if len(self.content) > 1990
                 else self.content
             )
 
