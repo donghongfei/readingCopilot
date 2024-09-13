@@ -6,14 +6,13 @@ from dateutil import parser
 from app.log import logger
 
 
-def parse_date(date_str, detailed_context="", strip_seconds=True):
+def parse_date(date_str, strip_seconds=True):
     """尝试解析不同格式的日期字符串，转换为ISO 8601格式，并转换为东八区（北京时间）"""
 
-    # logger.debug(f"Original date string: {date_str}, Context: {detailed_context}")
-
     if date_str is None:
-        logger.warning(f"日期字段为空，将使用当前日期. Context: {detailed_context}")
-        return datetime.now(pytz.timezone("Asia/Shanghai")).isoformat()
+        now = datetime.now(pytz.timezone("Asia/Shanghai")).isoformat()
+        logger.warning(f"日期字段为空，将使用当前日期. 当前日期{now}")
+        return now
 
     try:
         # 使用 dateutil.parser 来解析日期字符串
