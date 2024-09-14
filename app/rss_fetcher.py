@@ -76,6 +76,9 @@ def fetch_rss_content(rss_info: RSSItem):
             logger.debug(f"RSS源 {rss_url} 没有新文章，跳过处理。")
             return articles
 
+        # 只处理前20篇文章
+        feed.entries = feed.entries[:20]
+
         # 收集文章链接，批量查询
         article_links = [entry.link for entry in feed.entries]
         existing_links = check_articles_existence_in_notion(article_links)
@@ -145,11 +148,12 @@ def process_rss_feed(rss_feed: RSSItem) -> List[str]:
 
         save_article_to_notion(article)
 
-        article_message = f"{article.title}\n{article.link}"
+        article_message = f"{article.title}\n{article.link}\n"
         rss_messages.append(article_message)
 
-    if len(rss_messages) > 1:
-        final_message = "\n".join(rss_messages).join(f"@{rss_feed.title}")
+    if len(rss_messages) > 0:
+        rss_messages.append(f"@{rss_feed.title}")
+        final_message = "\n".join(rss_messages)
         logger.info(f"发送消息到企业微信群机器人: {rss_feed.title}")
         send_message_to_wechat(final_message)
     else:

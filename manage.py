@@ -24,7 +24,7 @@ def main():
             rss_feed = future_to_rss[future]
             try:
                 messages = future.result()
-                logger.info(f"处理完成: {rss_feed.title}, 消息数: {len(messages)}")
+                logger.info(f"处理完成: {rss_feed.title}")
             except Exception as exc:
                 logger.error(f"处理 {rss_feed.title} 时发生错误: {exc}")
 
