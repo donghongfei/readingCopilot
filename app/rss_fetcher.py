@@ -1,11 +1,17 @@
+from typing import List
+
 import feedparser
 import requests
 
 from app.log import logger
 from app.model.article import Article
 from app.model.rss_item import RSSItem
-from app.notion_manager import check_articles_existence_in_notion  # 假设有这个方法
-from app.notion_manager import update_rss_status
+from app.notion_manager import (
+    check_articles_existence_in_notion,
+    save_article_to_notion,
+    update_rss_status,
+)
+from app.send_message import send_message_to_wechat
 from app.utils import parse_date
 
 
@@ -122,3 +128,31 @@ def fetch_rss_content(rss_info: RSSItem):
             remarks=f"解析错误: {str(e)}",
         )
         return []
+
+
+def process_rss_feed(rss_feed: RSSItem) -> List[str]:
+    logger.info(f"开始处理: {rss_feed.title}")
+
+    articles = fetch_rss_content(rss_feed)
+
+    logger.info(f"文章抓取完成，源: {rss_feed.title}")
+
+    rss_messages = []
+
+    for article in articles:
+        logger.info(f"开始保存文章: {article.title}")
+        logger.debug(f"article: {article.to_notion_properties()}")
+
+        save_article_to_notion(article)
+
+        article_message = f"{article.title}\n{article.link}"
+        rss_messages.append(article_message)
+
+    if len(rss_messages) > 1:
+        final_message = "\n".join(rss_messages).join(f"@{rss_feed.title}")
+        logger.info(f"发送消息到企业微信群机器人: {rss_feed.title}")
+        send_message_to_wechat(final_message)
+    else:
+        logger.info(f"没有新的文章更新: {rss_feed.title}")
+
+    return rss_messages
