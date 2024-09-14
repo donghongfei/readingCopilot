@@ -17,9 +17,6 @@ def main():
     active_rss_feeds = get_active_rss_feeds()
     logger.debug(f"Active RSS Feeds: {active_rss_feeds}")
 
-    # 存储所有更新文章的消息
-    messages = []
-
     # 遍历每个RSS Feed的链接，抓取文章
     for rss_feed in active_rss_feeds:
         logger.info(f"开始处理: {rss_feed.title}")
@@ -29,7 +26,7 @@ def main():
         logger.info(f"文章抓取完成，源: {rss_feed.title}")
 
         # 为当前RSS feed准备消息
-        rss_messages = [f"@{rss_feed.title}"]
+        rss_messages = []
 
         # 遍历每篇文章，保存至Notion，并准备发送消息
         for article in articles:
@@ -40,12 +37,12 @@ def main():
             save_article_to_notion(article)
 
             # 准备消息内容
-            article_message = f"{article.title}\n{article.link}"
+            article_message = f"{article.title}\n{article.link}\n"
             rss_messages.append(article_message)
 
         # 如果有新的文章更新，发送消息到企业微信群
         if len(rss_messages) > 1:  # 确保有文章更新
-            final_message = "\n".join(rss_messages)
+            final_message = "\n".join(rss_messages).join(f"@{rss_feed.title}")
             logger.info(f"发送消息到企业微信群机器人: {rss_feed.title}")
             send_message_to_wechat(final_message)
         else:
